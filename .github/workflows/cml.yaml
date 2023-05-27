@@ -1,0 +1,30 @@
+name: model-wine-quality
+on: [push]
+jobs:
+  run:
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '16'
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - uses: iterative/setup-cml@v1
+      - name: Train model
+        env:
+          # REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }} # comment out this line if you're using a personal access tok
+          REPO_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          pip install -r requirements.txt
+          python train.py
+          
+          echo "## Model Metrics" > report.md
+          cat metrics.txt >> report.md
+
+          echo "## Data visualization" >> report.md
+          echo '![](feature_importance.png "Feature importance")' >> report.md
+          echo '![](residuals.png "Residuals")' >> report.md
+
+          cml comment create report.md
